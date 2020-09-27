@@ -1,0 +1,45 @@
+.page_search .title {
+    width: 50%;
+    float: right;
+    margin-top: 20px
+}
+
+.page_search .abstract {
+    float: left;
+    width: 50%;
+    margin-top: 20px
+}
+
+.page_search .fullText {
+    width: 50%;
+    float: right;
+    margin-top: 20px
+}
+
+.page_search .discipline {
+    float: left;
+    width: 50%
+}
+
+.page_search .subject {
+    width: 50%;
+    float: right
+}
+
+.page_search .type {
+    float: left;
+    width: 50%;
+    margin-top: 20px
+}
+
+.page_search .coverage {
+    width: 50%;
+    float: right;
+    margin-top: 20px
+}
+
+.page_search .indexTerms {
+    float: left;
+    width: 50%;
+    margin-top: 20px
+}
