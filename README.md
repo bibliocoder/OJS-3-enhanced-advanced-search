@@ -22,7 +22,9 @@ This modification is solely based on adding template and CSS code as the corresp
 
 2. Apply custom CSS file **OJS_3_advanced_search_additional_search_fields.css** to your journal (Settings > Website > Appearance > Advanced > Journal style sheet > Upload .css file > Save)
 
-Tested with latest OJS 3.2.1-1, but these changes can also be applied to any OJS 3.x version prior than that.
+3. In order to apply the template changes it could be neccesary to clear the template cache (Administration > Administrative Functions > Clear Template Cache)
+
+Tested with latest OJS 3.3.0-7 (released June 23, 2021). For OJS 3.2.x and prior please refer to the older release.
 
 ## License
 This software is released under the the [GNU General Public License](LICENSE).
