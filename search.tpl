@@ -1,8 +1,8 @@
 {**
  * templates/frontend/pages/search.tpl
  *
- * Copyright (c) 2014-2020 Simon Fraser University
- * Copyright (c) 2003-2020 John Willinsky
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @brief Display the page to search and view search results.
@@ -29,7 +29,8 @@
 		{translate key="common.search"}
 	</h1>
 
-	{capture name="searchFormUrl"}{url op="search" escape=false}{/capture}
+	{capture name="searchFormUrl"}{url escape=false}{/capture}
+	{assign var=formUrlParameters value=[]}{* Prevent Smarty warning *}
 	{$smarty.capture.searchFormUrl|parse_url:$smarty.const.PHP_URL_QUERY|parse_str:$formUrlParameters}
 	<form class="cmp_form" method="get" action="{$smarty.capture.searchFormUrl|strtok:"?"|escape}">
 		{foreach from=$formUrlParameters key=paramKey item=paramValue}
@@ -53,16 +54,12 @@
 			</legend>
 			<div class="date_range">
 				<div class="from">
-					<label class="label">
-						{translate key="search.dateFrom"}
-					</label>
-					{html_select_date prefix="dateFrom" time=$dateFrom start_year=$yearStart end_year=$yearEnd year_empty="" month_empty="" day_empty="" field_order="YMD"}
+					{capture assign="dateFromLegend"}{translate key="search.dateFrom"}{/capture}
+					{html_select_date_a11y legend=$dateFromLegend prefix="dateFrom" time=$dateFrom start_year=$yearStart end_year=$yearEnd}
 				</div>
 				<div class="to">
-					<label class="label">
-						{translate key="search.dateTo"}
-					</label>
-					{html_select_date prefix="dateTo" time=$dateTo start_year=$yearStart end_year=$yearEnd year_empty="" month_empty="" day_empty="" field_order="YMD"}
+					{capture assign="dateFromTo"}{translate key="search.dateTo"}{/capture}
+					{html_select_date_a11y legend=$dateFromTo prefix="dateTo" time=$dateTo start_year=$yearStart end_year=$yearEnd}
 				</div>
 			</div>
 			<div class="author">
@@ -70,76 +67,7 @@
 					{translate key="search.author"}
 				</label>
 				{block name=searchAuthors}
-					<input type="text" for="authors" name="authors" value="{$authors|escape}">
-				{/block}
-			</div>
-			<div class="title">
-				<label class="label" for="title">
-					{translate key="search.title"}
-				</label>
-				{block name=searchTitle}
-					<input type="text" for="title" name="title" value="{$title|escape}">
-				{/block}
-			</div>
-			<div class="abstract">
-				<label class="label" for="abstract">
-					{translate key="search.abstract"}
-				</label>
-				{block name=searchAbstract}
-					<input type="text" for="abstract" name="abstract" value="{$abstract|escape}">
-				{/block}
-			</div>
-			<div class="fullText">
-				<label class="label" for="fullText">
-					{translate key="search.fullText"}
-				</label>
-				{block name=searchFullText}
-					<input type="text" for="galleyFullText" name="galleyFullText" value="{$galleyFullText|escape}">
-				{/block}
-			</div>
-		</fieldset>
-		<fieldset class="search_advanced">
-			<legend>
-				{translate key="search.indexTerms"}
-			</legend>
-			<div class="discipline">
-				<label class="label" for="discipline">
-					{translate key="search.discipline"}
-				</label>
-				{block name=searchDiscipline}
-					<input type="text" for="discipline" name="discipline" value="{$discipline|escape}">
-				{/block}
-			</div>
-			<div class="subject">
-				<label class="label" for="subject">
-					{translate key="search.subject"}
-				</label>
-				{block name=searchSubject}
-					<input type="text" for="subject" name="subject" value="{$subject|escape}">
-				{/block}
-			</div>
-			<div class="type">
-				<label class="label" for="type">
-					{translate key="search.typeMethodApproach"}
-				</label>
-				{block name=searchType}
-					<input type="text" for="type" name="type" value="{$type|escape}">
-				{/block}
-			</div>
-			<div class="coverage">
-				<label class="label" for="coverage">
-					{translate key="search.coverage"}
-				</label>
-				{block name=searchCoverage}
-					<input type="text" for="coverage" name="coverage" value="{$coverage|escape}">
-				{/block}
-			</div>
-			<div class="indexTerms">
-				<label class="label" for="indexTerms">
-					{translate key="search.indexTermsLong"}
-				</label>
-				{block name=searchIndexTerms}
-					<input type="text" for="indexTerms" name="indexTerms" value="{$indexTerms|escape}">
+					<input type="text" id="authors" name="authors" value="{$authors|escape}">
 				{/block}
 			</div>
 			{call_hook name="Templates::Search::SearchResults::AdditionalFilters"}
@@ -152,34 +80,44 @@
 
 	{call_hook name="Templates::Search::SearchResults::PreResults"}
 
+	<h2 class="pkp_screen_reader">{translate key="search.searchResults"}</h2>
+
 	{* Results pagination *}
 	{if !$results->wasEmpty()}
-		<div class="pkp_screen_reader">
-			{page_info iterator=$results}
-			{page_links anchor="results" iterator=$results name="search" query=$query searchJournal=$searchJournal authors=$authors title=$title abstract=$abstract galleyFullText=$galleyFullText discipline=$discipline subject=$subject type=$type coverage=$coverage indexTerms=$indexTerms dateFromMonth=$dateFromMonth dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateToMonth=$dateToMonth dateToDay=$dateToDay dateToYear=$dateToYear orderBy=$orderBy orderDir=$orderDir}
+		{assign var="count" value=$results->count}
+		<div class="pkp_screen_reader" role="status">
+			{if $results->count > 1}
+				{translate key="search.searchResults.foundPlural" count=$results->count}
+			{else}
+				{translate key="search.searchResults.foundSingle"}
+			{/if}
 		</div>
 	{/if}
 
 	{* Search results, finally! *}
-	<div class="search_results">
+	<ul class="search_results">
 		{iterate from=results item=result}
-			{include file="frontend/objects/article_summary.tpl" article=$result.publishedSubmission journal=$result.journal showDatePublished=true hideGalleys=true}
+			<li>
+				{include file="frontend/objects/article_summary.tpl" article=$result.publishedSubmission journal=$result.journal showDatePublished=true hideGalleys=true heading="h3"}
+			</li>
 		{/iterate}
-	</div>
+	</ul>
 
 	{* No results found *}
 	{if $results->wasEmpty()}
-		{if $error}
-			{include file="frontend/components/notification.tpl" type="error" message=$error|escape}
-		{else}
-			{include file="frontend/components/notification.tpl" type="notice" messageKey="search.noResults"}
-		{/if}
+		<span role="status">
+			{if $error}
+				{include file="frontend/components/notification.tpl" type="error" message=$error|escape}
+			{else}
+				{include file="frontend/components/notification.tpl" type="notice" messageKey="search.noResults"}
+			{/if}
+		</span>
 
 	{* Results pagination *}
 	{else}
 		<div class="cmp_pagination">
 			{page_info iterator=$results}
-			{page_links anchor="results" iterator=$results name="search" query=$query searchJournal=$searchJournal authors=$authors title=$title abstract=$abstract galleyFullText=$galleyFullText discipline=$discipline subject=$subject type=$type coverage=$coverage indexTerms=$indexTerms dateFromMonth=$dateFromMonth dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateToMonth=$dateToMonth dateToDay=$dateToDay dateToYear=$dateToYear orderBy=$orderBy orderDir=$orderDir}
+			{page_links anchor="results" iterator=$results name="search" query=$query searchJournal=$searchJournal authors=$authors dateFromMonth=$dateFromMonth dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateToMonth=$dateToMonth dateToDay=$dateToDay dateToYear=$dateToYear}
 		</div>
 	{/if}
 
